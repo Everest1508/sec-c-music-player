@@ -9,24 +9,21 @@ const router = useRouter()
 const searchStore = useSearchStore()
 const audioPlayer = ref(null)
 
-// Handle search results
+// Handle search results and navigate
 const updateResults = (results) => {
   searchStore.setResults(results);
-  router.push('/search') ;
+  router.push('/search');
 }
 
 // Trigger playback in the global player
 const playSong = (song) => {
-  if (audioPlayer.value) {
-    audioPlayer.value.playNewSong(song)
-  } 
+  if (audioPlayer.value && audioPlayer.value.playNewSong) {
+    audioPlayer.value.playNewSong(song);
+  } else {
+    console.error("AudioPlayer component not properly referenced");
+  }
 }
 </script>
-
-<script setup>
-
-</script>
-
 
 <template>
   <div class="flex flex-col min-h-screen bg-gray-900 text-white">
@@ -34,18 +31,33 @@ const playSong = (song) => {
       <SearchBar @update-results="updateResults" />
     </div>
 
-    <main class="font-stretch-extra-condensed flex-1 container mx-auto p-4 content-body">
+    <main class="font-stretch-extra-condensed flex-1 container mx-auto p-4 content-body pb-24">
       <RouterView />
     </main>
-    <AudioPlayer ref="audioPlayer"/>
+
+    <!-- Attach ref to access methods -->
+    <AudioPlayer ref="audioPlayer" class="audio-player" />
   </div>
 </template>
 
 <style scoped>
-  .nav-bar{
+  .nav-bar {
     z-index: 50;
   }
-  .content-body{
+  .content-body {
     z-index: 10;
+  }
+
+  .audio-player {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: #1f2937;
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 100; /* Make sure it's on top of everything */
   }
 </style>
