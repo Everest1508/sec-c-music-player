@@ -2,10 +2,10 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { eventBus } from '@/eventBus.js'
 
-// Create reactive audio object
+// Reactive audio object
 const audio = ref(new Audio())
 
-// Reactive properties
+// Reactive states
 const isPlaying = ref(false)
 const currentTime = ref(0)
 const duration = ref(0)
@@ -24,20 +24,19 @@ const getFormattedTitle = (title) => {
   return title ? title.split('-')[0].trim() : "Unknown Title"
 }
 
-// Compute formatted title for display
+// Computed formatted title
 const formattedTitle = computed(() => getFormattedTitle(currentSong.value.title))
 
-// Function to fetch song URL and play
+// Function to fetch and play a new song
 const playNewSong = async (song) => {
   if (currentSong.value.src !== song.src) {
     isLoading.value = true
     try {
-      // Fetch the song source URL from API
       const res = await fetch(`https://song-scraper.riteshmahale15.workers.dev/song?slug=${song.src}`)
       const data = await res.json()
 
       if (data.audioSrc) {
-        // Assign the new audio source
+        // Assign new audio source
         audio.value.src = data.audioSrc
         currentSong.value = { ...song, src: data.audioSrc }
 
@@ -60,32 +59,36 @@ const playNewSong = async (song) => {
 
 // Toggle play/pause
 const togglePlay = () => {
+  if (!audio.value) return
+
   if (audio.value.paused) {
     audio.value.play()
-    isPlaying.value = true
   } else {
     audio.value.pause()
-    isPlaying.value = false
   }
+
+  isPlaying.value = !audio.value.paused
 }
 
 // Stop the song
 const stopAudio = () => {
+  if (!audio.value) return
+
   audio.value.pause()
   audio.value.currentTime = 0
   isPlaying.value = false
 }
 
-// Seek audio
+// Seek audio position
 const seekAudio = (event) => {
-  if (audio.value) {
-    audio.value.currentTime = event.target.value
-  }
+  if (!audio.value) return
+
+  audio.value.currentTime = event.target.value
+  currentTime.value = audio.value.currentTime
 }
 
-// Listen for global play events
+// Event listeners for audio updates
 onMounted(() => {
-  // Attach event listeners to update UI
   audio.value.ontimeupdate = () => {
     currentTime.value = audio.value.currentTime
   }
@@ -94,7 +97,15 @@ onMounted(() => {
     isPlaying.value = false
   }
 
-  // Listen for play event from global eventBus
+  audio.value.onpause = () => {
+    isPlaying.value = false
+  }
+
+  audio.value.onplay = () => {
+    isPlaying.value = true
+  }
+
+  // Listen for play event from eventBus
   eventBus.on('playSong', (song) => {
     playNewSong(song)
   })
@@ -140,6 +151,9 @@ onMounted(() => {
 
 <style scoped>
 .audio-player {
+  position: fixed;
+  bottom: 0;
+  left: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
