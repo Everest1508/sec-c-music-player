@@ -53,7 +53,7 @@ const playSong = (song) => {
     bottom: 0;
     left: 0;
     width: 100%;
-    background: #1f2937;
+    background: #263d5e;
     padding: 12px;
     display: flex;
     align-items: center;
