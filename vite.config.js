@@ -3,14 +3,16 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
 import vueDevTools from 'vite-plugin-vue-devtools'
-import { VitePWA } from 'vite-plugin-pwa' // ✅ Import PWA plugin
+import { VitePWA } from 'vite-plugin-pwa'
+import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
   plugins: [
+    tailwindcss(),
     vue(),
     vueJsx(),
-    vueDevTools(),
-    VitePWA({  // ✅ Add PWA Support
+    // vueDevTools(),
+    VitePWA({
       registerType: 'autoUpdate',
       manifest: {
         name: 'PagalFree Music',

@@ -1,77 +1,51 @@
 <script setup>
-import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
+import { useRouter } from 'vue-router'
+import { useSearchStore } from '@/stores/searchResults.js'
+import SearchBar from '@/components/SearchBar.vue'
+import AudioPlayer from './components/AudioPlayer.vue'
+import { ref } from 'vue'
+
+const router = useRouter()
+const searchStore = useSearchStore()
+const audioPlayer = ref(null)
+
+// Handle search results
+const updateResults = (results) => {
+  searchStore.setResults(results);
+  router.push('/search') ;
+}
+
+// Trigger playback in the global player
+const playSong = (song) => {
+  if (audioPlayer.value) {
+    audioPlayer.value.playNewSong(song)
+  } 
+}
 </script>
 
-<template>
-  <header>
+<script setup>
 
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
+</script>
+
+
+<template>
+  <div class="flex flex-col min-h-screen bg-gray-900 text-white">
+    <div class="sticky top-0 left-0 bg-gray-900 pt-2 nav-bar">
+      <SearchBar @update-results="updateResults" />
     </div>
-  </header>
+
+    <main class="font-stretch-extra-condensed flex-1 container mx-auto p-4 content-body">
+      <RouterView />
+    </main>
+    <AudioPlayer ref="audioPlayer"/>
+  </div>
 </template>
 
 <style scoped>
-header {
-  line-height: 1.5;
-  max-height: 100vh;
-}
-
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-nav {
-  width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
-}
-
-nav a.router-link-exact-active {
-  color: var(--color-text);
-}
-
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
-}
-
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
-}
-
-nav a:first-of-type {
-  border: 0;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
+  .nav-bar{
+    z-index: 50;
   }
-
-  .logo {
-    margin: 0 2rem 0 0;
+  .content-body{
+    z-index: 10;
   }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
-}
 </style>
