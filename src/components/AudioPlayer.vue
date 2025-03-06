@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { eventBus } from '@/eventBus.js'
 
 // Reactive audio object
@@ -27,6 +27,22 @@ const getFormattedTitle = (title) => {
 // Computed formatted title
 const formattedTitle = computed(() => getFormattedTitle(currentSong.value.title))
 
+// References for text elements
+const titleRef = ref(null)
+const artistRef = ref(null)
+const isTitleOverflowing = ref(false)
+const isArtistOverflowing = ref(false)
+
+// Function to check if text overflows
+const checkOverflow = () => {
+  if (titleRef.value) {
+    isTitleOverflowing.value = titleRef.value.scrollWidth > titleRef.value.clientWidth
+  }
+  if (artistRef.value) {
+    isArtistOverflowing.value = artistRef.value.scrollWidth > artistRef.value.clientWidth
+  }
+}
+
 // Function to fetch and play a new song
 const playNewSong = async (song) => {
   if (currentSong.value.src !== song.src) {
@@ -45,6 +61,8 @@ const playNewSong = async (song) => {
           duration.value = audio.value.duration
           audio.value.play()
           isPlaying.value = true
+          checkOverflow() // Recalculate overflow
+          updateMediaSession() // 🔥 Update Media Metadata
         }
       } else {
         console.error("Invalid song source received")
@@ -87,6 +105,20 @@ const seekAudio = (event) => {
   currentTime.value = audio.value.currentTime
 }
 
+// 🔥 Media Session API - Updates song metadata in notification & lock screen
+const updateMediaSession = () => {
+  if ('mediaSession' in navigator) {
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: currentSong.value.title,
+      artist: currentSong.value.artist || "Unknown Artist",
+      album: "Now Playing",
+      artwork: [
+        { src: currentSong.value.image, sizes: "512x512", type: "image/png" }
+      ]
+    })
+  }
+}
+
 // Event listeners for audio updates
 onMounted(() => {
   audio.value.ontimeupdate = () => {
@@ -103,12 +135,21 @@ onMounted(() => {
 
   audio.value.onplay = () => {
     isPlaying.value = true
+    updateMediaSession() // 🔥 Ensure metadata updates on play
   }
 
   // Listen for play event from eventBus
   eventBus.on('playSong', (song) => {
     playNewSong(song)
   })
+
+  // Check overflow when mounted
+  checkOverflow()
+  window.addEventListener('resize', checkOverflow)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', checkOverflow)
 })
 </script>
 
@@ -118,11 +159,19 @@ onMounted(() => {
     <img :src="currentSong.image" alt="Cover" class="w-12 h-12 rounded-lg object-cover mr-4" />
 
     <!-- Song Info -->
-    <div class="flex-1">
-      <h3 class="text-lg font-semibold truncate">
+    <div class="flex-1 overflow-hidden">
+      <h3
+        class="text-lg font-semibold"
+        :class="{ 'marquee': isTitleOverflowing }"
+        ref="titleRef"
+      >
         {{ formattedTitle }}
       </h3>
-      <p class="text-sm text-gray-400">
+      <p
+        class="text-sm text-gray-400"
+        :class="{ 'marquee': isArtistOverflowing }"
+        ref="artistRef"
+      >
         {{ currentSong.artist || "Unknown Artist" }}
       </p>
 
@@ -138,13 +187,16 @@ onMounted(() => {
     </div>
 
     <!-- Play/Pause Button -->
-    <button @click="togglePlay" class="p-2 mx-2 bg-blue-500 rounded-lg text-white hover:bg-blue-600">
-      <font-awesome-icon :icon="isPlaying ? 'pause' : 'play'" size="lg" />
-    </button>
+    <button @click="togglePlay" class="p-2 mx-2 bg-blue-500 rounded-full text-white hover:bg-blue-600">
+      <!-- Play Icon -->
+      <svg v-if="!isPlaying" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-6.518-3.759A1 1 0 007 8.06v7.882a1 1 0 001.234.95l6.518-3.76a1 1 0 000-1.764z"/>
+      </svg>
 
-    <!-- Stop Button -->
-    <button @click="stopAudio" class="p-2 mx-2 bg-red-500 rounded-lg text-white hover:bg-red-600">
-      <font-awesome-icon icon="stop" size="lg" />
+      <!-- Pause Icon (⏸️ Two Vertical Bars) -->
+      <svg v-else xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 5H6v14h4V5zm8 0h-4v14h4V5z"/>
+      </svg>
     </button>
   </div>
 </template>
@@ -158,5 +210,24 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
+}
+
+/* Marquee Effect */
+@keyframes marquee {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+
+.marquee {
+  display: inline-block;
+  white-space: nowrap;
+  overflow: hidden;
+  position: relative;
+}
+
+.marquee span {
+  display: inline-block;
+  padding-left: 100%;
+  animation: marquee 5s linear infinite;
 }
 </style>
