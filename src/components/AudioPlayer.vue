@@ -116,6 +116,12 @@ const updateMediaSession = () => {
         { src: currentSong.value.image, sizes: "512x512", type: "image/png" }
       ]
     })
+    
+    navigator.mediaSession.setPositionState({
+      duration: audio.value.duration || 0,
+      playbackRate: audio.value.playbackRate,
+      position: audio.value.currentTime
+    });
   }
 }
 
