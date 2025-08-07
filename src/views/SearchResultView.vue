@@ -1,16 +1,22 @@
 <script setup>
 import { useSearchStore } from '@/stores/searchResults.js'
+import { usePlaylistStore } from '@/stores/playlist.js'
 import MusicBox from '@/components/MusicBox.vue'
-
-// Import event bus for playing the song
 import { eventBus } from '@/eventBus.js'
+import { onMounted } from 'vue'
 
 const searchStore = useSearchStore()
+const playlistStore = usePlaylistStore()
 
 // Function to handle play event from MusicBox
 const playNewSong = (song) => {
   eventBus.emit('playSong', song) // Sends song data to global player
 }
+
+onMounted(() => {
+  // Load playlists for the MusicBox dropdown
+  playlistStore.loadPlaylists()
+})
 </script>
 
 <template>

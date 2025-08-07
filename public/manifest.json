@@ -1,24 +1,29 @@
 {
-    "name": "SecC Music",
-    "short_name": "SecC",
-    "description": "A PWA Music Player for SecC Songs",
+    "name": "SecC Music Player",
+    "short_name": "SecC Music",
+    "description": "A Progressive Web App Music Player with offline support, playlists, and queue management",
     "start_url": "/",
     "display": "standalone",
     "display_override": ["fullscreen", "minimal-ui", "standalone", "browser"],
-    "background_color": "#ffffff",
-    "theme_color": "#007bff",
+    "background_color": "#111827",
+    "theme_color": "#3b82f6",
+    "orientation": "portrait-primary",
+    "categories": ["music", "entertainment"],
+    "lang": "en",
     "screenshots": [
         {
           "src": "/screenshots/desktop.png",
           "sizes": "1919x951",
           "type": "image/png",
-          "form_factor": "wide"
+          "form_factor": "wide",
+          "label": "Desktop view of SecC Music Player"
         },
         {
           "src": "/screenshots/mobile.png",
           "sizes": "407x893",
           "type": "image/png",
-          "form_factor": "narrow"
+          "form_factor": "narrow",
+          "label": "Mobile view of SecC Music Player"
         }
       ],
     "icons": [
@@ -26,19 +31,35 @@
       "src": "/icons/web-app-manifest-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "any maskable"
     },
     {
       "src": "/icons/web-app-manifest-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "any maskable"
     },
     {
         "src": "/icons/web-app-manifest-144x144.png",
         "sizes": "144x144",
         "type": "image/png",
         "purpose": "any"
+      }
+    ],
+    "shortcuts": [
+      {
+        "name": "Search Music",
+        "short_name": "Search",
+        "description": "Search for your favorite songs",
+        "url": "/?action=search",
+        "icons": [{ "src": "/icons/web-app-manifest-192x192.png", "sizes": "192x192" }]
+      },
+      {
+        "name": "My Playlists",
+        "short_name": "Playlists",
+        "description": "View and manage your playlists",
+        "url": "/playlists",
+        "icons": [{ "src": "/icons/web-app-manifest-192x192.png", "sizes": "192x192" }]
       }
     ]
   }

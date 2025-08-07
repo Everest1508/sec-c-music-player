@@ -14,38 +14,47 @@ export default defineConfig({
     // vueDevTools(),
     VitePWA({
       registerType: 'autoUpdate',
-      manifest: {
-        name: 'PagalFree Music',
-        short_name: 'PagalFree',
-        description: 'A PWA Music Player for PagalFree Songs',
-        theme_color: '#007bff',
-        icons: [
-          {
-            src: 'icons/icon-192x192.png',
-            sizes: '192x192',
-            type: 'image/png'
-          },
-          {
-            src: 'icons/icon-512x512.png',
-            sizes: '512x512',
-            type: 'image/png'
-          }
-        ]
-      },
       workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest}'],
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/pagalfree.com\/.*/,
+            urlPattern: /^https:\/\/song-scraper\.riteshmahale15\.workers\.dev\/.*/,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'api-cache',
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 24 * 60 * 60, // Cache for 1 day
+              },
+              networkTimeoutSeconds: 3,
+            },
+          },
+          {
+            urlPattern: /\.(mp3|m4a|wav|ogg)$/,
             handler: 'CacheFirst',
             options: {
-              cacheName: 'music-cache',
+              cacheName: 'audio-cache',
               expiration: {
                 maxEntries: 50,
                 maxAgeSeconds: 7 * 24 * 60 * 60, // Cache for 1 week
               },
             },
           },
+          {
+            urlPattern: /\.(jpg|jpeg|png|gif|webp)$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'image-cache',
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 30 * 24 * 60 * 60, // Cache for 1 month
+              },
+            },
+          },
         ],
+      },
+      devOptions: {
+        enabled: true
       }
     }),
   ],
